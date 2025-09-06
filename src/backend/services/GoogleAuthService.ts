@@ -29,26 +29,29 @@ interface AuthToken {
 const collection = db.collection<AuthToken>("authTokens");
 
 export class GoogleAuthService {
+	static generateRedirectUri(serverURL: string) {
+		return new URL(REDIRECT_URI, serverURL).toString();
+	}
+
 	static getAuthUrl(serverURL: string) {
-		const redirectUrl = new URL(REDIRECT_URI, serverURL);
 		const oauth2Client = new google.auth.OAuth2(
 			GCP_OAUTH_CLIENT_ID,
 			GCP_OAUTH_CLIENT_SECRET,
-			redirectUrl.toString(),
+			GoogleAuthService.generateRedirectUri(serverURL),
 		);
 		const authUrl = oauth2Client.generateAuthUrl({
 			access_type: "offline",
 			scope: GOOGLE_AUTH_SCOPES,
+			prompt: "consent",
 		});
 		return authUrl;
 	}
 
 	static async processCode(code: string, serverURL: string) {
-		const redirectUri = new URL(REDIRECT_URI, serverURL);
 		const oauth2Client = new google.auth.OAuth2(
 			GCP_OAUTH_CLIENT_ID,
 			GCP_OAUTH_CLIENT_SECRET,
-			redirectUri.toString(),
+			GoogleAuthService.generateRedirectUri(serverURL),
 		);
 		const { tokens } = await oauth2Client.getToken(code);
 		await oauth2Client.setCredentials(tokens);
@@ -59,10 +62,72 @@ export class GoogleAuthService {
 		if (!email) {
 			throw new Error("Email not found");
 		}
-		await collection.insertOne({
-			email,
-			...tokens,
-		});
+		await collection.updateOne(
+			{
+				email,
+			},
+			{
+				$set: {
+					email,
+					...tokens,
+				},
+			},
+			{
+				upsert: true,
+			},
+		);
 		return tokens;
+	}
+
+	static async listAccounts() {
+		const accounts = await collection.find({}).toArray();
+		return accounts.map((account) => account.email);
+	}
+
+	private static async getClientByTokens(token: AuthToken, url: string) {
+		console.log("token", token);
+		const authClient = new google.auth.OAuth2(
+			GCP_OAUTH_CLIENT_ID,
+			GCP_OAUTH_CLIENT_SECRET,
+			GoogleAuthService.generateRedirectUri(url),
+		);
+
+		authClient.on("tokens", (tokens) => {
+			console.log("tokens", tokens);
+			collection.updateOne(
+				{
+					email: token.email,
+				},
+				{
+					$set: {
+						...tokens,
+						refresh_token: tokens.refresh_token || token.refresh_token,
+					},
+				},
+				{
+					upsert: true,
+				},
+			);
+		});
+		authClient.setCredentials(token);
+		return {
+			email: token.email,
+			authClient,
+		};
+	}
+
+	static async getAllClients(url: string) {
+		const tokens = await collection.find({}).toArray();
+		return Promise.all(
+			tokens.map((token) => GoogleAuthService.getClientByTokens(token, url)),
+		);
+	}
+
+	static async getClient(email: string, url: string) {
+		const token = await collection.findOne({ email });
+		if (!token) {
+			throw new Error("Token not found");
+		}
+		return GoogleAuthService.getClientByTokens(token, url);
 	}
 }

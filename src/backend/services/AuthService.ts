@@ -64,6 +64,18 @@ export class AuthService {
 		return true;
 	}
 
+	static async regenerateToken() {
+		AuthService.generateUniqueSessionId();
+		const privateKey = new TextEncoder().encode(
+			`${AuthService.secret}:${AuthService.sessionId}`,
+		);
+		const token = await new jose.SignJWT({ username: AuthService.username })
+			.setProtectedHeader({ alg: "HS256" })
+			.setExpirationTime("1h")
+			.sign(privateKey);
+		return token;
+	}
+
 	static async logout() {
 		AuthService.sessionId = null;
 	}

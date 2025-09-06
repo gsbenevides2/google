@@ -8,7 +8,11 @@ export const Home: React.FC = () => {
 	// Função para buscar todas as plataformas
 	const getAccounts = useCallback(async () => {
 		try {
-		} catch (error) {}
+			const response = await apiClient.api.auth["list-accounts"].get();
+			setAccounts(response.data?.accounts || []);
+		} catch (error) {
+			console.error("Error fetching accounts", error);
+		}
 	}, []);
 
 	const goToLogin = () => {

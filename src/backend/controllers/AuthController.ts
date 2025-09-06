@@ -21,8 +21,9 @@ const AuthController = new Elysia({
 			cookie.token.value = response;
 			cookie.token.httpOnly = true;
 			cookie.token.secure = true;
-			cookie.token.sameSite = "strict";
+			cookie.token.sameSite = "lax";
 			cookie.token.maxAge = 3600000; // 1 hour
+			cookie.token.path = "/";
 
 			return status(200, {
 				success: true,

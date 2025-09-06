@@ -37,14 +37,48 @@ export const GoogleAuthController = new Elysia({
 	)
 	.get(
 		"/callback",
-		async ({ status, query, headers }) => {
+		async ({ status, query, headers, request, set }) => {
+			const code = query.code;
+			const origin = request.url;
 			const isHTML = headers.accept?.includes("text/html");
-			if (!query.code && !isHTML) {
-				return status(StatusMap.BadRequest, {
+			if (!code) {
+				console.log("Code not found");
+				if (isHTML) {
+					set.headers.location = "/error";
+					return status(StatusMap["Temporary Redirect"], "/error");
+				}
+				return status(StatusMap["Bad Request"], {
 					error: "Code not found",
 				});
-			} else if (!query.code && isHTML) {
-				return status(StatusMap["Temporary Redirect"], "/error");
+			}
+			if (!origin) {
+				console.log("Origin not found");
+				if (isHTML) {
+					set.headers.location = "/error";
+					return status(StatusMap["Temporary Redirect"], "/error");
+				}
+				return status(StatusMap["Bad Request"], {
+					error: "Origin not found",
+				});
+			}
+			try {
+				await GoogleAuthService.processCode(code, origin);
+				if (isHTML) {
+					set.headers.location = "/success";
+					return status(StatusMap["Temporary Redirect"], "/success");
+				}
+				return status(StatusMap.OK, {
+					success: true,
+				});
+			} catch (error) {
+				console.log("Error processing code", error);
+				if (isHTML) {
+					set.headers.location = "/error";
+					return status(StatusMap["Temporary Redirect"], "/error");
+				}
+				return status(StatusMap["Bad Request"], {
+					error: "Error processing code",
+				});
 			}
 		},
 		{
@@ -61,6 +95,47 @@ export const GoogleAuthController = new Elysia({
 					}),
 				),
 			}),
+		},
+	)
+	.get(
+		"/list-accounts",
+		async () => {
+			const accounts = await GoogleAuthService.listAccounts();
+			return {
+				accounts,
+			};
+		},
+		{
+			detail: {
+				summary: "List accounts",
+				description: "List accounts",
+			},
+			response: {
+				200: t.Object(
+					{
+						accounts: t.Array(
+							t.String({
+								title: "Account Email",
+								description: "The email of the account",
+								example: "test@example.com",
+							}),
+							{
+								minItems: 0,
+								maxItems: 100,
+								uniqueItems: true,
+								description: "The array of account emails",
+								example: ["test@example.com", "test2@example.com"],
+							},
+						),
+					},
+					{
+						description: "The response of the list accounts",
+						example: {
+							accounts: ["test@example.com", "test2@example.com"],
+						},
+					},
+				),
+			},
 		},
 	)
 	.as("scoped");

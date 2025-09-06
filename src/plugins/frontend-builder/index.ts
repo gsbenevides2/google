@@ -20,6 +20,16 @@ export async function frontEndBuilder(options: FrontendBuilderOptions) {
 				hide: true,
 			},
 		})
+		.get("/success", ({ request }) => handleReactRequest(request), {
+			detail: {
+				hide: true,
+			},
+		})
+		.get("/error", ({ request }) => handleReactRequest(request), {
+			detail: {
+				hide: true,
+			},
+		})
 		.get("/styles.css", handleStyles, {
 			detail: {
 				hide: true,
