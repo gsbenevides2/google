@@ -42,7 +42,6 @@ export const GoogleAuthController = new Elysia({
 			const origin = request.url;
 			const isHTML = headers.accept?.includes("text/html");
 			if (!code) {
-				console.log("Code not found");
 				if (isHTML) {
 					set.headers.location = "/error";
 					return status(StatusMap["Temporary Redirect"], "/error");
@@ -52,7 +51,6 @@ export const GoogleAuthController = new Elysia({
 				});
 			}
 			if (!origin) {
-				console.log("Origin not found");
 				if (isHTML) {
 					set.headers.location = "/error";
 					return status(StatusMap["Temporary Redirect"], "/error");
