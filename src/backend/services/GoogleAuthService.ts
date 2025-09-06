@@ -30,7 +30,14 @@ const collection = db.collection<AuthToken>("authTokens");
 
 export class GoogleAuthService {
 	static generateRedirectUri(serverURL: string) {
-		return new URL(REDIRECT_URI, serverURL).toString();
+		const redirectUri = new URL(REDIRECT_URI, serverURL);
+		const isLocalhost = redirectUri.hostname === "localhost";
+		if (!isLocalhost) {
+			redirectUri.protocol = "https";
+		} else {
+			redirectUri.protocol = "http";
+		}
+		return redirectUri.toString();
 	}
 
 	static getAuthUrl(serverURL: string) {
