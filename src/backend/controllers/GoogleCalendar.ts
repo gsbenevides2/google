@@ -85,6 +85,7 @@ export const GoogleCalendarController = new Elysia({
 			const formatedEvent = {
 				id: event.data.id ?? "",
 				summary: event.data.summary ?? "",
+				description: event.data.description ?? "",
 				start_date: event.data.start?.dateTime ?? "",
 				end_date: event.data.end?.dateTime ?? "",
 				attendees:
@@ -141,6 +142,11 @@ export const GoogleCalendarController = new Elysia({
 					summary: t.String({
 						title: "Summary",
 						description: "The summary of the event",
+						example: "Test Event",
+					}),
+					description: t.String({
+						title: "Description",
+						description: "The description of the event",
 						example: "Test Event",
 					}),
 					start_date: t.String({
