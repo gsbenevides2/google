@@ -165,4 +165,23 @@ export class GoogleCalendarService {
 			requestBody,
 		});
 	}
+
+	public static async getEvent(args: {
+		email: string;
+		calendarId: string;
+		eventId: string;
+		url: string;
+	}) {
+		const { email, calendarId, eventId, url } = args;
+
+		const oauth2Client = await GoogleAuthService.getClient(email, url);
+		const calendar = google.calendar({
+			version: "v3",
+			auth: oauth2Client.authClient,
+		});
+		return await calendar.events.get({
+			calendarId,
+			eventId,
+		});
+	}
 }

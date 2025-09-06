@@ -76,6 +76,187 @@ export const GoogleCalendarController = new Elysia({
 		},
 	)
 	.get(
+		"/get-event",
+		async ({ request, status, query }) => {
+			const event = await GoogleCalendarService.getEvent({
+				...query,
+				url: request.url,
+			});
+			const formatedEvent = {
+				id: event.data.id ?? "",
+				summary: event.data.summary ?? "",
+				start_date: event.data.start?.dateTime ?? "",
+				end_date: event.data.end?.dateTime ?? "",
+				attendees:
+					event.data.attendees?.map((a) => {
+						return {
+							display_name: a.displayName ?? "",
+							email: a.email ?? "",
+							response_status: a.responseStatus ?? "",
+						};
+					}) ?? [],
+				location: event.data.location ?? "",
+				color_id: event.data.colorId ?? "",
+				hangout_link: event.data.hangoutLink ?? "",
+				reminders: {
+					use_default: event.data.reminders?.useDefault ?? false,
+					overrides:
+						event.data.reminders?.overrides?.map((o) => {
+							return {
+								method: o.method ?? "",
+								minutes: o.minutes ?? 0,
+							};
+						}) ?? [],
+				},
+				organizer: {
+					self: event.data.organizer?.self ?? false,
+					display_name: event.data.organizer?.displayName ?? "",
+					email: event.data.organizer?.email ?? "",
+				},
+				work_location_properties: {
+					type: event.data.workingLocationProperties?.type ?? "",
+				},
+				birthday_properties: {
+					type: event.data.birthdayProperties?.type ?? "",
+				},
+			};
+			return status(200, formatedEvent);
+		},
+		{
+			response: {
+				200: t.Object({
+					id: t.String({
+						title: "ID",
+						description: "The ID of the event",
+						example: "1234567890",
+					}),
+					summary: t.String({
+						title: "Summary",
+						description: "The summary of the event",
+						example: "Test Event",
+					}),
+					start_date: t.String({
+						title: "Start Date",
+						description: "The start date of the event",
+						example: "2025-01-01T00:00:00Z",
+					}),
+					end_date: t.String({
+						title: "End Date",
+						description: "The end date of the event",
+						example: "2025-01-01T00:00:00Z",
+					}),
+					attendees: t.Array(
+						t.Object({
+							display_name: t.String({
+								title: "Display Name",
+								description: "The display name of the attendee",
+								example: "John Doe",
+							}),
+							email: t.String({
+								title: "Email",
+								description: "The email of the attendee",
+								example: "john.doe@example.com",
+							}),
+							response_status: t.String({
+								title: "Response Status",
+								description: "The response status of the attendee",
+								example: "accepted",
+								enum: ["accepted", "declined", "tentative", "needsAction"],
+							}),
+						}),
+					),
+					location: t.String({
+						title: "Location",
+						description: "The location of the event",
+						example: "123 Main St, Anytown, USA",
+					}),
+					color_id: t.String({
+						title: "Color ID",
+						description: "The color ID of the event",
+						example: "1",
+					}),
+					hangout_link: t.String({
+						title: "Hangout Link",
+						description: "The hangout link of the event",
+						example: "https://hangout.com",
+					}),
+					reminders: t.Object({
+						use_default: t.Boolean({
+							title: "Use Default",
+							description: "If the reminders should be used",
+							example: true,
+						}),
+						overrides: t.Array(
+							t.Object({
+								method: t.String({
+									title: "Method",
+									description: "The method of the reminder",
+									enum: ["email", "popup"],
+									example: "email",
+								}),
+								minutes: t.Number({
+									title: "Minutes",
+									description: "The minutes of the reminder",
+									example: 10,
+								}),
+							}),
+						),
+					}),
+					organizer: t.Object({
+						self: t.Boolean({
+							title: "Self",
+							description: "If the organizer is the same as the user",
+							example: true,
+						}),
+						display_name: t.String({
+							title: "Display Name",
+							description: "The display name of the organizer",
+							example: "John Doe",
+						}),
+						email: t.String({
+							title: "Email",
+							description: "The email of the organizer",
+							example: "john.doe@example.com",
+						}),
+					}),
+					work_location_properties: t.Object({
+						type: t.String({
+							title: "Type",
+							description: "The type of the work location properties",
+							example: "homeOffice",
+							enum: ["homeOffice", "officeLocation", "customLocation"],
+						}),
+					}),
+					birthday_properties: t.Object({
+						type: t.String({
+							title: "Type",
+							description: "The type of the birthday properties",
+							example: "birthday",
+							enum: ["birthday", "anniversary", "custom", "other", "self"],
+						}),
+					}),
+				}),
+			},
+			query: t.Object({
+				email: t.String({
+					title: "Email",
+					description: "The email of the owner of the calendar",
+					example: "test@example.com",
+				}),
+				calendarId: t.String({
+					title: "Calendar ID",
+					description: "The ID of the calendar",
+					example: "test@example.com",
+				}),
+				eventId: t.String({
+					title: "Event ID",
+					description: "The ID of the event",
+					example: "1234567890",
+				}),
+			}),
+		},
+	)
+	.get(
 		"/list-events",
 		async ({ request, status, query }) => {
 			const events = await GoogleCalendarService.listEvents({
