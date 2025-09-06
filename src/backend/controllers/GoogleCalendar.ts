@@ -120,6 +120,7 @@ export const GoogleCalendarController = new Elysia({
 				birthday_properties: {
 					type: event.data.birthdayProperties?.type ?? "",
 				},
+				event_type: event.data.eventType ?? "",
 				htmlLink: event.data.htmlLink ?? "",
 				conference_data:
 					event.data.conferenceData?.entryPoints?.map((e) => {
@@ -249,6 +250,19 @@ export const GoogleCalendarController = new Elysia({
 							enum: ["birthday", "anniversary", "custom", "other", "self"],
 						}),
 					}),
+					event_type: t.String({
+						title: "Event Type",
+						description: "The type of the event",
+						example: "conference",
+						enum: [
+							"birthday",
+							"default",
+							"focusTime",
+							"fromGmail",
+							"outOfOffice",
+							"workingLocation",
+						],
+					}),
 					htmlLink: t.String({
 						title: "HTML Link",
 						description: "The HTML link of the event",
@@ -309,6 +323,7 @@ export const GoogleCalendarController = new Elysia({
 					return {
 						id: e.id ?? "",
 						summary: e.summary ?? "",
+						description: e.description ?? "",
 						start_date: e.start?.dateTime ?? "",
 						end_date: e.end?.dateTime ?? "",
 						attendees: formatedAttendees,
@@ -336,6 +351,15 @@ export const GoogleCalendarController = new Elysia({
 						birthday_properties: {
 							type: e.birthdayProperties?.type ?? "",
 						},
+						htmlLink: e.htmlLink ?? "",
+						event_type: e.eventType ?? "",
+						conference_data:
+							e.conferenceData?.entryPoints?.map((e) => {
+								return {
+									uri: e.uri ?? "",
+									label: e.label ?? "",
+								};
+							}) ?? [],
 					};
 				}) ?? [];
 			return status(200, formatedEvents);
@@ -352,6 +376,11 @@ export const GoogleCalendarController = new Elysia({
 						summary: t.String({
 							title: "Summary",
 							description: "The summary of the event",
+							example: "Test Event",
+						}),
+						description: t.String({
+							title: "Description",
+							description: "The description of the event",
 							example: "Test Event",
 						}),
 						start_date: t.String({
@@ -454,6 +483,38 @@ export const GoogleCalendarController = new Elysia({
 								enum: ["birthday", "anniversary", "custom", "other", "self"],
 							}),
 						}),
+						htmlLink: t.String({
+							title: "HTML Link",
+							description: "The HTML link of the event",
+							example: "https://html.com",
+						}),
+						event_type: t.String({
+							title: "Event Type",
+							description: "The type of the event",
+							example: "conference",
+							enum: [
+								"birthday",
+								"default",
+								"focusTime",
+								"fromGmail",
+								"outOfOffice",
+								"workingLocation",
+							],
+						}),
+						conference_data: t.Array(
+							t.Object({
+								uri: t.String({
+									title: "URI",
+									description: "The URI of the entry point",
+									example: "https://example.com",
+								}),
+								label: t.String({
+									title: "Label",
+									description: "The label of the entry point",
+									example: "Example",
+								}),
+							}),
+						),
 					}),
 				),
 			},
