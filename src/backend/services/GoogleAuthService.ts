@@ -92,7 +92,6 @@ export class GoogleAuthService {
 	}
 
 	private static async getClientByTokens(token: AuthToken, url: string) {
-		console.log("token", token);
 		const authClient = new google.auth.OAuth2(
 			GCP_OAUTH_CLIENT_ID,
 			GCP_OAUTH_CLIENT_SECRET,
@@ -100,7 +99,6 @@ export class GoogleAuthService {
 		);
 
 		authClient.on("tokens", (tokens) => {
-			console.log("tokens", tokens);
 			collection.updateOne(
 				{
 					email: token.email,

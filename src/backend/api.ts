@@ -2,6 +2,7 @@ import { Elysia } from "elysia";
 import AuthController from "./controllers/AuthController";
 import { GoogleAuthController } from "./controllers/GoogleAuthController";
 import { GoogleCalendarController } from "./controllers/GoogleCalendar";
+import GoogleGmailController from "./controllers/GoogleGmailController";
 import { AuthService, InvalidCredentialsError } from "./services/AuthService";
 
 const api = new Elysia({
@@ -37,6 +38,7 @@ const api = new Elysia({
 	})
 	.use(AuthController)
 	.use(GoogleAuthController)
-	.use(GoogleCalendarController);
+	.use(GoogleCalendarController)
+	.use(GoogleGmailController);
 
 export default api;
