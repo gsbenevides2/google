@@ -279,6 +279,50 @@ export class GoogleGmailService {
 		return response.data.labels || [];
 	}
 
+	public static async sendEmail(args: {
+		email: string;
+		url: string;
+		to: string;
+		subject: string;
+		body: string;
+		cc?: string;
+		bcc?: string;
+		replyTo?: string;
+	}) {
+		const oauth2Client = await GoogleAuthService.getClient(
+			args.email,
+			args.url,
+		);
+		const gmail = google.gmail({
+			version: "v1",
+			auth: oauth2Client.authClient,
+		});
+
+		const headers = [
+			`From: ${args.email}`,
+			`To: ${args.to}`,
+			`Subject: ${args.subject}`,
+			...(args.cc ? [`Cc: ${args.cc}`] : []),
+			...(args.bcc ? [`Bcc: ${args.bcc}`] : []),
+			...(args.replyTo ? [`Reply-To: ${args.replyTo}`] : []),
+			"Content-Type: text/html; charset=utf-8",
+			"MIME-Version: 1.0",
+		].join("\r\n");
+
+		const raw = Buffer.from(`${headers}\r\n\r\n${args.body}`)
+			.toString("base64")
+			.replace(/\+/g, "-")
+			.replace(/\//g, "_")
+			.replace(/=+$/, "");
+
+		const response = await gmail.users.messages.send({
+			userId: "me",
+			requestBody: { raw },
+		});
+
+		return response.data;
+	}
+
 	public static async watchForNewEmails(args: {
 		email: string;
 		topicName: string;

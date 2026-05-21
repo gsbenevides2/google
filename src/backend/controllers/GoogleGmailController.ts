@@ -538,6 +538,97 @@ const GoogleGmailController = new Elysia({
 				),
 			}),
 		},
+	)
+	.post(
+		"/send-email",
+		async ({ request, status, query, body }) => {
+			const sent = await GoogleGmailService.sendEmail({
+				...query,
+				...body,
+				url: request.url,
+			});
+			return status(200, {
+				id: sent.id ?? "",
+				threadId: sent.threadId ?? "",
+				labelIds: sent.labelIds ?? [],
+			});
+		},
+		{
+			detail: {
+				summary: "Send email",
+				description: "Send an email on behalf of the authenticated user",
+			},
+			query: t.Object({
+				email: t.String({
+					title: "Email",
+					description: "The email of the sender",
+					example: "test@example.com",
+				}),
+			}),
+			body: t.Object({
+				to: t.String({
+					title: "To",
+					description: "Recipient email address",
+					example: "recipient@example.com",
+				}),
+				subject: t.String({
+					title: "Subject",
+					description: "Subject of the email",
+					example: "Hello!",
+				}),
+				body: t.String({
+					title: "Body",
+					description: "HTML body of the email",
+					example: "<p>Hello World</p>",
+				}),
+				cc: t.Optional(
+					t.String({
+						title: "CC",
+						description: "Carbon copy recipients",
+						example: "cc@example.com",
+					}),
+				),
+				bcc: t.Optional(
+					t.String({
+						title: "BCC",
+						description: "Blind carbon copy recipients",
+						example: "bcc@example.com",
+					}),
+				),
+				replyTo: t.Optional(
+					t.String({
+						title: "Reply-To",
+						description: "Reply-To address",
+						example: "noreply@example.com",
+					}),
+				),
+			}),
+			response: {
+				200: t.Object({
+					id: t.String({
+						title: "ID",
+						description: "The ID of the sent message",
+						example: "1234567890",
+					}),
+					threadId: t.String({
+						title: "Thread ID",
+						description: "The thread ID of the sent message",
+						example: "1234567890",
+					}),
+					labelIds: t.Array(
+						t.String({
+							title: "Label ID",
+							description: "Label applied to the sent message",
+							example: "SENT",
+						}),
+						{
+							title: "Label IDs",
+							description: "Labels applied to the sent message",
+						},
+					),
+				}),
+			},
+		},
 	);
 
 export default GoogleGmailController;
