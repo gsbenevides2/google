@@ -301,6 +301,10 @@ export const GoogleCalendarController = new Elysia({
 					example: "1234567890",
 				}),
 			}),
+			detail: {
+				summary: "Get event",
+				description: "Get event",
+			},
 		},
 	)
 	.get(
