@@ -141,6 +141,13 @@ const GoogleGmailController = new Elysia({
 				}
 			}
 
+			const attachments = await GoogleGmailService.getEmailAttachments({
+				email: query.email,
+				url: request.url,
+				messageId: query.messageId,
+				parts: email.payload?.parts ?? [],
+			});
+
 			const formattedEmail = {
 				id: email.id ?? "",
 				from:
@@ -154,6 +161,7 @@ const GoogleGmailController = new Elysia({
 				isUnread: email.labelIds?.includes("UNREAD") ?? false,
 				threadId: email.threadId ?? "",
 				body: body,
+				attachments,
 			};
 			return status(200, formattedEmail);
 		},
@@ -231,6 +239,39 @@ const GoogleGmailController = new Elysia({
 						description: "The body of the email",
 						example: "Test Email",
 					}),
+					attachments: t.Array(
+						t.Object({
+							filename: t.String({
+								title: "Filename",
+								description: "The filename of the attachment",
+								example: "document.pdf",
+							}),
+							mimeType: t.String({
+								title: "MIME Type",
+								description: "The MIME type of the attachment",
+								example: "application/pdf",
+							}),
+							size: t.Number({
+								title: "Size",
+								description: "The size of the attachment in bytes",
+								example: 12345,
+							}),
+							attachmentId: t.String({
+								title: "Attachment ID",
+								description: "The Gmail attachment ID",
+								example: "ANGjdJ...",
+							}),
+							data: t.String({
+								title: "Data",
+								description: "The base64url encoded attachment data",
+								example: "",
+							}),
+						}),
+						{
+							title: "Attachments",
+							description: "List of attachments in the email",
+						},
+					),
 				}),
 			},
 		},

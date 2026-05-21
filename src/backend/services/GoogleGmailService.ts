@@ -74,6 +74,85 @@ export class GoogleGmailService {
 		return response.data;
 	}
 
+	private static async extractPartsAttachments(
+		gmail: gmail_v1.Gmail,
+		messageId: string,
+		parts: gmail_v1.Schema$MessagePart[],
+	): Promise<
+		Array<{
+			filename: string;
+			mimeType: string;
+			size: number;
+			attachmentId: string;
+			data: string;
+		}>
+	> {
+		const attachments: Array<{
+			filename: string;
+			mimeType: string;
+			size: number;
+			attachmentId: string;
+			data: string;
+		}> = [];
+
+		for (const part of parts) {
+			if (part.filename && part.filename.length > 0) {
+				let data = part.body?.data ?? "";
+				const attachmentId = part.body?.attachmentId ?? "";
+
+				if (!data && attachmentId) {
+					const response = await gmail.users.messages.attachments.get({
+						userId: "me",
+						messageId,
+						id: attachmentId,
+					});
+					data = response.data.data ?? "";
+				}
+
+				attachments.push({
+					filename: part.filename,
+					mimeType: part.mimeType ?? "",
+					size: part.body?.size ?? 0,
+					attachmentId,
+					data,
+				});
+			}
+
+			if (part.parts) {
+				const nested = await GoogleGmailService.extractPartsAttachments(
+					gmail,
+					messageId,
+					part.parts,
+				);
+				attachments.push(...nested);
+			}
+		}
+
+		return attachments;
+	}
+
+	public static async getEmailAttachments(args: {
+		email: string;
+		url: string;
+		messageId: string;
+		parts: gmail_v1.Schema$MessagePart[];
+	}) {
+		const oauth2Client = await GoogleAuthService.getClient(
+			args.email,
+			args.url,
+		);
+		const gmail = google.gmail({
+			version: "v1",
+			auth: oauth2Client.authClient,
+		});
+
+		return GoogleGmailService.extractPartsAttachments(
+			gmail,
+			args.messageId,
+			args.parts,
+		);
+	}
+
 	public static async markAsRead(args: {
 		email: string;
 		messageIds: string[];
