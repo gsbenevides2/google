@@ -27,7 +27,7 @@ export async function handleReactRequest(request: Request) {
 		})
 		.filter((data) => data !== null)[0];
 
-	if (data?.protected) {
+	if (data?.protected && AuthService.isAuthEnabled()) {
 		const cookies = new Bun.CookieMap(request.headers.get("cookie") ?? "");
 		const token = cookies.get("token");
 		if (!token) {

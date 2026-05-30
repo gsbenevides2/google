@@ -9,9 +9,12 @@ const api = new Elysia({
 	prefix: "/api",
 })
 	.onBeforeHandle(async ({ cookie, status, route, headers }) => {
-		if (route.startsWith("/api/auth")) {
-			return;
-		}
+		if (route.startsWith("/api/auth")) return;
+
+		// Fallback solicitado: se a "variável de senha" (AUTH_PASSWORD) não estiver definida,
+		// o acesso fica livre (sem exigir proxy/header auth).
+		if (!AuthService.isAuthEnabled()) return;
+
 		const inHeader = headers.authorization;
 		if (inHeader) {
 			const result = await AuthService.verifyFromHeader(inHeader);
@@ -29,6 +32,7 @@ const api = new Elysia({
 				error: "Unauthorized",
 			});
 		}
+
 		const decoded = await AuthService.verify(token);
 		if (!decoded || decoded instanceof InvalidCredentialsError) {
 			return status(401, {
