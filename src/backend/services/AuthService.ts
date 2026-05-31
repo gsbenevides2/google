@@ -13,10 +13,6 @@ export class InvalidCredentialsError extends Error {
 	}
 }
 
-function isNonEmptyString(v: unknown): v is string {
-	return typeof v === "string" && v.trim().length > 0;
-}
-
 export class AuthService {
 	token: string | null = null;
 	// Se as variáveis de autenticação não estiverem definidas,
