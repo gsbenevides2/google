@@ -9,7 +9,7 @@ const api = new Elysia({
 	prefix: "/api",
 })
 	.onBeforeHandle(async ({ cookie, status, route, headers }) => {
-		if (route.startsWith("/api/auth")) {
+		if (route.startsWith("/api/auth") || route === "/api/health") {
 			return;
 		}
 		const inHeader = headers.authorization;
@@ -36,6 +36,23 @@ const api = new Elysia({
 			});
 		}
 	})
+	.get(
+		"/health",
+		() => {
+			return {
+				status: "ok",
+				timestamp: new Date().toISOString(),
+				uptimeSeconds: Math.round(process.uptime()),
+			};
+		},
+		{
+			detail: {
+				tags: ["Systems"],
+				summary: "API healthcheck",
+				description: "Endpoint para healthcheck da API",
+			},
+		},
+	)
 	.use(AuthController)
 	.use(GoogleAuthController)
 	.use(GoogleCalendarController)
