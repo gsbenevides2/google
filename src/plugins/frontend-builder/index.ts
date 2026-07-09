@@ -40,9 +40,29 @@ export async function frontEndBuilder(options: FrontendBuilderOptions) {
 				hide: true,
 			},
 		})
-		.get("/favicon.ico", () => {
-			return Bun.file("src/frontend/favicon.ico");
-		})
+		.get("/favicon.ico", () => Bun.file("src/frontend/icons/favicon.ico"))
+		.get("/favicon.svg", () => Bun.file("src/frontend/icons/favicon.svg"))
+		.get("/favicon-32x32.png", () =>
+			Bun.file("src/frontend/icons/favicon-32x32.png"),
+		)
+		.get("/favicon-16x16.png", () =>
+			Bun.file("src/frontend/icons/favicon-16x16.png"),
+		)
+		.get("/apple-touch-icon.png", () =>
+			Bun.file("src/frontend/icons/apple-touch-icon.png"),
+		)
+		.get("/android-chrome-192x192.png", () =>
+			Bun.file("src/frontend/icons/android-chrome-192x192.png"),
+		)
+		.get("/android-chrome-512x512.png", () =>
+			Bun.file("src/frontend/icons/android-chrome-512x512.png"),
+		)
+		.get("/safari-pinned-tab.svg", () =>
+			Bun.file("src/frontend/icons/safari-pinned-tab.svg"),
+		)
+		.get("/site.webmanifest", () =>
+			Bun.file("src/frontend/icons/site.webmanifest"),
+		)
 		.onError({ as: "global" }, async ({ error, request }) => {
 			const is404 = "status" in error && error.status === 404;
 			const isBrowser = request.headers.get("accept")?.includes("text/html");
