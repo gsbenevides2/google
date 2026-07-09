@@ -20,7 +20,6 @@ export function Root() {
 				<meta name="description" content="Google Plataform" />
 				<meta name="viewport" content="width=device-width, initial-scale=1" />
 				<link rel="stylesheet" href="/styles.css" />
-				<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 				<link
 					rel="icon"
 					href="/favicon-32x32.png"

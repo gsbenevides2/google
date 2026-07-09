@@ -41,7 +41,6 @@ export async function frontEndBuilder(options: FrontendBuilderOptions) {
 			},
 		})
 		.get("/favicon.ico", () => Bun.file("src/frontend/icons/favicon.ico"))
-		.get("/favicon.svg", () => Bun.file("src/frontend/icons/favicon.svg"))
 		.get("/favicon-32x32.png", () =>
 			Bun.file("src/frontend/icons/favicon-32x32.png"),
 		)
